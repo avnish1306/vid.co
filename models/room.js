@@ -46,9 +46,9 @@ const roomSchema = new Schema({
         }
     }]
 });
-roomSchema.statics.joinRoom=(roomId,guestObj)=>{  //gusetObj = {'guestId','guestName'}
+roomSchema.statics.joinRoom=(meetingId,guestObj)=>{  //gusetObj = {'guestId','guestName'}
     var promise = new Promise((resolve,reject)=>{
-        Room.findOne({'roomId':roomId},(err,room)=>{
+        Room.findOne({'meetingId':meetingId},(err,room)=>{
             if(err) return reject(err);
             if(!room) return resolve({status:false,msg:"Room Not found"});
             let guset = room.guests.find(x=>{
