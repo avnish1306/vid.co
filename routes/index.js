@@ -58,7 +58,6 @@ router.post('/createRoom', function(req, res, next) {
      });
     // console.log("namespace ",nsp);
     nsp.on('connection', function(socket){
-      console.warn("ID 1:",socket._id);
       console.warn("ID 11:",socket.id);
     console.log('connection request',);
 
@@ -138,12 +137,14 @@ router.post('/joinRoom',(req,res,next)=>{
         }
       }else{
         const nsp = io.of('/'+roomId);
-        var nspSockets = nsp.sockets.sockets;
-        console.warn("NSG R",nsp.adapter.rooms);//.sockets.sockets);
-        console.warn("KEYS R",Object.keys(nsp.adapter.rooms));//.sockets.sockets));
+        var nspSockets = Object.keys(nsp.connected);
+        // console.warn("NSG 0",nsp.connected[Object.keys(nsp.connected)[0]]);//.sockets.sockets);
+        // console.warn("KEYS 0",Object.keys(nsp.connected[Object.keys(nsp.connected)[0]]));//.sockets.sockets));
         var hostSocket = nspSockets.find(x=>{
-          return x._isHost==true;
+          return nsp.connected[x]._isHost == true;
         })
+        console.log("HOST SOCKET",hostSocket);
+        hostSocket = nsp.connected[hostSocket];
         hostSocket.emit('guest-request',guestObj);
         return res.status(200).json({
           'status':0,
