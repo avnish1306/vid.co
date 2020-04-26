@@ -1,0 +1,58 @@
+  t: 'N6s7RcU' }
+USER >>> ajsk9gxo3hl
+ROOM >>> { host: { hostName: 'nitujkhhjkh', hostId: 'ajsk9gxl9sk' },
+  createdAt: 2020-04-26T10:49:30.630Z,
+  _id: 5ea567599e33c035681a1872,
+  meetingId: 'ajsk9gxl9sl',
+  roomId: 'nitujkhhjkhajsk9gxl9sj',
+  guests:
+   [ { status: true,
+       joinedAt: 2020-04-26T10:49:30.630Z,
+       leftAt: null,
+       isHost: true,
+       _id: 5ea567599e33c035681a1873,
+       guestId: 'ajsk9gxl9sk',
+       guestName: 'nitujkhhjkh' },
+     { status: true,
+       joinedAt: 2020-04-26T10:49:30.630Z,
+       leftAt: null,
+       isHost: false,
+       _id: 5ea567dd9e33c035681a1874,
+       guestId: 'ajsk9gxo3hl',
+       guestName: '' } ],
+  roomKey: 'k9gxl9sm',
+  __v: 1 }
+SALT { status: true,
+  joinedAt: 2020-04-26T10:49:30.630Z,
+  leftAt: null,
+  isHost: true,
+  _id: 5ea567599e33c035681a1873,
+  guestId: 'ajsk9gxl9sk',
+  guestName: 'nitujkhhjkh' } ajsk9gxo3hl
+SALT { status: true,
+  joinedAt: 2020-04-26T10:49:30.630Z,
+  leftAt: null,
+  isHost: false,
+  _id: 5ea567dd9e33c035681a1874,
+  guestId: 'ajsk9gxo3hl',
+  guestName: '' } ajsk9gxo3hl
+Use If Then me  true false null
+ID 1: undefined
+ID 11: /nitujkhhjkhajsk9gxl9sj#shMLFFcMvlcg0tNIAAAC
+connection request
+someone connected
+NSG R { '/nitujkhhjkhajsk9gxl9sj#LAcJ5FczWGQjDAsFAAAB':
+   Room {
+     sockets: { '/nitujkhhjkhajsk9gxl9sj#LAcJ5FczWGQjDAsFAAAB': true },
+     length: 1 },
+  '/nitujkhhjkhajsk9gxl9sj#shMLFFcMvlcg0tNIAAAC':
+   Room {
+     sockets: { '/nitujkhhjkhajsk9gxl9sj#shMLFFcMvlcg0tNIAAAC': true },
+     length: 1 } }
+KEYS R [ '/nitujkhhjkhajsk9gxl9sj#LAcJ5FczWGQjDAsFAAAB',
+  '/nitujkhhjkhajsk9gxl9sj#shMLFFcMvlcg0tNIAAAC' ]
+TypeError: Cannot read property 'find' of undefined
+    at Room.getRoomId.then (D:\Innovation Challenge\vid.co\routes\index.js:144:37)
+    at process._tickCallback (internal/process/next_tick.js:68:7)
+POST /joinRoom 500 118.671 ms - 31
+

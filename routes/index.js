@@ -25,22 +25,29 @@ router.post('/createRoom', function(req, res, next) {
     .use((socket, next) => {
       let token = socket.handshake.query.token||null;
       let roomId1 = socket.handshake.query.roomId||null;
-      let userObj = socket.handshake.query.user||null;
-      if(userObj){
-        authUser(userObj,roomId1).then(isHost=>{
+      let userId1 = socket.handshake.query.userId||null;
+      console.log('user object',socket.handshake.query);
+      if(userId1){
+        authUser(userId1,roomId1).then(isHost=>{
+        
           socket._isAuthenticated=true;
           socket._authError=null;
-          socket._guetsId = userObj.userId,
+          socket._guestId = userId1,
           socket._isHost=isHost;
+          console.log("Use If Then me ",socket._isAuthenticated,socket._isHost,socket._authError);
+          return next();
         }).catch(x=>{
           socket._isAuthenticated=false;
           socket._authError=x;
+          console.log("Use If Catch me ",socket._isAuthenticated,socket._authError);
+          return next();
         })
       }else{
         socket._isAuthenticated=false;
         socket._authError="User obj required";
+        console.log("Use Else me ",socket._isAuthenticated,socket._authError);
+        return next();
       }
-      return next();
       // // verify token
       // jwt.verify(token, process.env.TOKEN_SECRET, (err, decoded) => {
       //   if(err) return next(err);
@@ -49,8 +56,12 @@ router.post('/createRoom', function(req, res, next) {
       //   next();
       // });
      });
-    console.log("namespace ",nsp);
+    // console.log("namespace ",nsp);
     nsp.on('connection', function(socket){
+      console.warn("ID 1:",socket._id);
+      console.warn("ID 11:",socket.id);
+    console.log('connection request',);
+
       if(!socket._isAuthenticated){
         socket.emit("authenticate",{status:false,msg:socket._authError})
         socket.disconnect(true);
@@ -69,7 +80,7 @@ router.post('/createRoom', function(req, res, next) {
             }
           })
         }
-        console.log('someone connected ,', socket,'\n\n\n',nsp);
+        console.log('someone connected ');
       }
 
       
@@ -127,7 +138,9 @@ router.post('/joinRoom',(req,res,next)=>{
         }
       }else{
         const nsp = io.of('/'+roomId);
-        var nspSockets = io.of('/chat').sockets;
+        var nspSockets = nsp.sockets.sockets;
+        console.warn("NSG R",nsp.adapter.rooms);//.sockets.sockets);
+        console.warn("KEYS R",Object.keys(nsp.adapter.rooms));//.sockets.sockets));
         var hostSocket = nspSockets.find(x=>{
           return x._isHost==true;
         })
@@ -147,6 +160,7 @@ router.post('/joinRoom',(req,res,next)=>{
     }
 
   }).catch(e=>{
+    console.log(e)
     return handleError(res);
   });
 });
@@ -179,14 +193,17 @@ router.get('/checkReqStatus',(req,res,next)=>{
 })
 
 
-const authUser = (userObj,roomId)=>{
-  let promise = new Promise((resolve,reject)=>{
+const authUser = (userId,roomId)=>{
+  console.log("USER >>>",userId);
+  return new Promise((resolve,reject)=>{
     if(!roomId) return reject("Room id required");
     Room.findOne({'roomId':roomId},(err,room)=>{
       if(err) return reject("internal server error");
       if(!room) return reject("Room not found");
+      console.log("ROOM >>>",room);
       let user = room.guests.find(x=>{
-        return x.guestId=userObj.userId;
+        console.log("SALT",x, userId)
+        return x.guestId==userId;
       });
       if(!user) return reject("Auth Failed");
       if(user.isHost){
@@ -195,8 +212,6 @@ const authUser = (userObj,roomId)=>{
         return resolve(false);
       }
     });
-
-    return promise;
   })
 }
 module.exports = router;
