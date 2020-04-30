@@ -6,7 +6,7 @@ const cors = require('cors');
 
 
 var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+var admin = require('./routes/admin');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 dotenv.config();
@@ -28,6 +28,6 @@ process.exit(1);
 });
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/admin', admin);
 
 module.exports = app;
