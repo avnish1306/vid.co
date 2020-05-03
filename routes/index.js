@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 var User = require('../models/user');
 var Room = require('../models/room');
-const {getNewId,getNewKey,handle200Error,handleError}  = require('../utils/utils')
+const {getNewId,getNewKey,handle200Error,handleError,getPersonalRoomId}  = require('../utils/utils')
 
 /* GET home page. */
 router.post('/createRoom', function(req, res, next) {
@@ -28,12 +28,14 @@ router.post('/createRoom', function(req, res, next) {
       let userId1 = socket.handshake.query.userId||null;
       console.log('user object',socket.handshake.query);
       if(userId1){
-        authUser(userId1,roomId1).then(isHost=>{
+        authUser(userId1,roomId1).then(authRes=>{
         
           socket._isAuthenticated=true;
           socket._authError=null;
           socket._guestId = userId1,
-          socket._isHost=isHost;
+          socket._isHost=authRes.isHost,
+          socket._name = authRes.guestName,
+          socket._roomId=roomId1
           console.log("Use If Then me ",socket._isAuthenticated,socket._isHost,socket._authError);
           return next();
         }).catch(x=>{
@@ -65,7 +67,18 @@ router.post('/createRoom', function(req, res, next) {
         socket.emit("authenticate",{status:false,msg:socket._authError})
         socket.disconnect(true);
       }else{
-        socket.emit("authenticate",{status:true,msg:"Successfuly authenticated"});
+        Room.getGuests(socket._roomId).then(resp=>{
+          if(resp.status){
+            joinPersonalRooms(socket._guestId,resp.data,socket);
+            socket.emit("authenticate",{status:true,msg:"Successfuly authenticated, Sending user list",guests:resp.data});
+          }else{
+            socket.emit("authenticate",{status:true,msg:"Successfuly authenticated, Sending user list"+resp.msg,guests:[]});
+          }
+          
+        }).catch(err=>{
+          socket.emit("authenticate",{status:true,msg:"Successfuly authenticated, Sending user list"+err,guests:[]});
+        })
+        
         if(socket._isHost){ //listeners for host
           socket.on('guest-request-response',(response)=>{   //{status:true/false,guestObj:{guestId,guestName},meetingId:""}
             if(response.status){
@@ -79,13 +92,33 @@ router.post('/createRoom', function(req, res, next) {
             }
           })
         }
+        socket.on('join-personal-room',(response)=>{
+          let {ownId,userId} = response;
+          let roomId = getPersonalRoomId(ownId,userId);
+          socket.join(roomId);
+        });
+        socket.on('personal-message',(msgObj)=>{ //{type=0:"msg",type=1:"Action",type=3:"typing"}  {type,to,from,msg}
+          let {to,from} = msgObj;
+          let personalRoomId = getPersonalRoomId(to,from);
+
+          socket.broadcast.to(personalRoomId).emit('personal-message-reply', msgObj);
+        })
+        nsp.emit('new-user-added',{
+          'userId':socket._guestId,
+          'name':socket._name,
+
+
+        });
+        nsp.on("group-message",(msgObj)=>{ //{type=0:"msg",type=1:"Action",type=3:"typing"}
+          nsp.emit('group-message-reply',msgObj);
+        })
         console.log('someone connected ');
       }
 
       
     });
     //nsp.emit('hi', 'everyone!');
-    return res.status(200).json({
+    res.status(200).json({
       'status':1,
       'data':{
         'roomId':roomId,
@@ -96,7 +129,7 @@ router.post('/createRoom', function(req, res, next) {
     })
 
   }).catch(e=>{
-      return handleError(res);
+      handleError(res);
   })
 });
 
@@ -193,7 +226,15 @@ router.get('/checkReqStatus',(req,res,next)=>{
   }
 })
 
-
+const joinPersonalRooms = (ownId,guests,socket)=>{
+  guests.forEach(guest => {
+    let userId = guest.guestId;
+    if(userId!=ownId){
+      let roomId = getPersonalRoomId(ownId,userId);
+      socket.join(roomId);
+    }
+  });
+}
 const authUser = (userId,roomId)=>{
   console.log("USER >>>",userId);
   return new Promise((resolve,reject)=>{
@@ -208,9 +249,9 @@ const authUser = (userId,roomId)=>{
       });
       if(!user) return reject("Auth Failed");
       if(user.isHost){
-        return resolve(true);
+        return resolve({'userObj':user,'isHost':true});
       }else{
-        return resolve(false);
+        return resolve({'userObj':user,'isHost':false});
       }
     });
   })

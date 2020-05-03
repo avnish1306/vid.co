@@ -17,9 +17,13 @@ const handle200Error = (res,msg="Internal Server Error")=>{
         'msg':msg
       });
 }
+const getPersonalRoomId = (to,from)=>{
+    return  to<from?to+'_'+from:from+'_'+to;
+}
 module.exports = {
     getNewId,
     getNewKey,
     handleError,
-    handle200Error
+    handle200Error,
+    getPersonalRoomId
 }
