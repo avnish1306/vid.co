@@ -220,7 +220,7 @@ router.get('/checkReqStatus',(req,res,next)=>{
         }
       })
   }else{
-    return req.status(500).json({
+    return res.status(500).json({
       'err':"Error in query params"
     });
   }
@@ -256,6 +256,17 @@ const authUser = (userId,roomId)=>{
     });
   })
 }
+
+router.get('/roomGuests',(req,res)=>{
+    Room.findOne({'roomId':req.query.roomId || ""},(err,room)=>{
+      if(err) return handleError(res);
+      if(!room) return handle200Error(res,"Room not found");
+      return res.status(200).json({
+        status: 1,
+        roomGuests: room.guests
+      })
+    });
+});
 module.exports = router;
 
 /*
