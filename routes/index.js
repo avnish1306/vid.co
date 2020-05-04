@@ -249,9 +249,9 @@ const authUser = (userId,roomId)=>{
       });
       if(!user) return reject("Auth Failed");
       if(user.isHost){
-        return resolve({'userObj':user,'isHost':true});
+        return resolve({'userObj':user,'isHost':true,'guestName':user.guestName});
       }else{
-        return resolve({'userObj':user,'isHost':false});
+        return resolve({'userObj':user,'isHost':false,'guestName':user.guestName});
       }
     });
   })
